@@ -4,12 +4,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
+type FeedFilter = 'feed' | 'donate' | 'request';
+type SocialFilter = 'all' | 'following' | 'trending';
+
 interface HomeHeaderProps {
   onNotificationsPress?: () => void;
   onSearchPress?: () => void;
+  onMessagesPress?: () => void;
+  activeFilter?: FeedFilter;
+  onFilterChange?: (filter: FeedFilter) => void;
+  activeSocialFilter?: SocialFilter;
+  onSocialFilterChange?: (filter: SocialFilter) => void;
 }
 
-export default function HomeHeader({ onNotificationsPress, onSearchPress }: HomeHeaderProps) {
+export default function HomeHeader({
+  onNotificationsPress,
+  onSearchPress,
+  onMessagesPress,
+  activeFilter = 'feed',
+  onFilterChange,
+  activeSocialFilter = 'all',
+  onSocialFilterChange
+}: HomeHeaderProps) {
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.header}>
@@ -30,6 +46,13 @@ export default function HomeHeader({ onNotificationsPress, onSearchPress }: Home
 
           <TouchableOpacity
             style={styles.iconButton}
+            onPress={onMessagesPress}
+          >
+            <Icon name="chatbubbles-outline" size={22} color="#1F2937" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconButton}
             onPress={onNotificationsPress}
           >
             <Text style={styles.iconText}>🔔</Text>
@@ -41,16 +64,47 @@ export default function HomeHeader({ onNotificationsPress, onSearchPress }: Home
         </View>
       </View>
 
-      {/* Filter Tabs */}
+      {/* Post Type Filter Tabs */}
       <View style={styles.filterContainer}>
-        <TouchableOpacity style={[styles.filterTab, styles.filterTabActive]}>
-          <Text style={[styles.filterText, styles.filterTextActive]}>All</Text>
+        <TouchableOpacity
+          style={[styles.filterTab, activeFilter === 'feed' && styles.filterTabActive]}
+          onPress={() => onFilterChange?.('feed')}
+        >
+          <Text style={[styles.filterText, activeFilter === 'feed' && styles.filterTextActive]}>Feed</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterTab}>
-          <Text style={styles.filterText}>Following</Text>
+        <TouchableOpacity
+          style={[styles.filterTab, activeFilter === 'donate' && styles.filterTabActive]}
+          onPress={() => onFilterChange?.('donate')}
+        >
+          <Text style={[styles.filterText, activeFilter === 'donate' && styles.filterTextActive]}>Donate</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.filterTab}>
-          <Text style={styles.filterText}>Trending</Text>
+        <TouchableOpacity
+          style={[styles.filterTab, activeFilter === 'request' && styles.filterTabActive]}
+          onPress={() => onFilterChange?.('request')}
+        >
+          <Text style={[styles.filterText, activeFilter === 'request' && styles.filterTextActive]}>Request</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Social Filter Tabs */}
+      <View style={styles.socialFilterContainer}>
+        <TouchableOpacity
+          style={[styles.socialFilterTab, activeSocialFilter === 'all' && styles.socialFilterTabActive]}
+          onPress={() => onSocialFilterChange?.('all')}
+        >
+          <Text style={[styles.socialFilterText, activeSocialFilter === 'all' && styles.socialFilterTextActive]}>All</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.socialFilterTab, activeSocialFilter === 'following' && styles.socialFilterTabActive]}
+          onPress={() => onSocialFilterChange?.('following')}
+        >
+          <Text style={[styles.socialFilterText, activeSocialFilter === 'following' && styles.socialFilterTextActive]}>Following</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.socialFilterTab, activeSocialFilter === 'trending' && styles.socialFilterTabActive]}
+          onPress={() => onSocialFilterChange?.('trending')}
+        >
+          <Text style={[styles.socialFilterText, activeSocialFilter === 'trending' && styles.socialFilterTextActive]}>Trending</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -140,5 +194,31 @@ const styles = StyleSheet.create({
   },
   filterTextActive: {
     color: '#FFFFFF',
+  },
+  socialFilterContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+    paddingTop: 8,
+  },
+  socialFilterTab: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: 'transparent',
+  },
+  socialFilterTabActive: {
+    backgroundColor: '#EFF6FF',
+  },
+  socialFilterText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#9CA3AF',
+  },
+  socialFilterTextActive: {
+    color: '#3B82F6',
   },
 });

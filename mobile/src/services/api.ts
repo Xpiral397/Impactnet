@@ -105,8 +105,12 @@ export const authAPI = {
 
 export const postsAPI = {
   // Get feed
-  getFeed: async (page: number = 1) => {
-    const response = await api.get(`/posts/?page=${page}`);
+  getFeed: async (page: number = 1, postType?: string) => {
+    let url = `/posts/?page=${page}`;
+    if (postType) {
+      url += `&post_type=${postType}`;
+    }
+    const response = await api.get(url);
     return response.data;
   },
 
@@ -123,14 +127,27 @@ export const postsAPI = {
   },
 
   // Comment on post
-  commentOnPost: async (postId: number, content: string) => {
-    const response = await api.post(`/posts/${postId}/comments/`, { content });
+  commentOnPost: async (postId: number, content: string, parent?: number | null) => {
+    const payload: any = { content };
+    if (parent) {
+      payload.parent_comment = parent;
+    }
+    console.log('Sending comment payload:', payload);
+    const response = await api.post(`/posts/${postId}/comments/`, payload);
     return response.data;
   },
 
   // Get post comments
   getComments: async (postId: number) => {
     const response = await api.get(`/posts/${postId}/comments/`);
+    return response.data;
+  },
+};
+
+export const aiAPI = {
+  // Rewrite text with AI
+  rewriteText: async (text: string, context: string = 'comment') => {
+    const response = await api.post('/ai/rewrite/', { text, context });
     return response.data;
   },
 };
@@ -161,6 +178,90 @@ export const faceVerificationAPI = {
   // Check liveness action
   checkLivenessAction: async (action: string, image: string) => {
     const response = await api.post('/ai/liveness-check/', { action, image });
+    return response.data;
+  },
+};
+
+// Chat API
+export const chatAPI = {
+  // Get all conversations for current user
+  getConversations: async () => {
+    const response = await api.get('/chat/conversations/');
+    return response.data;
+  },
+
+  // Get or create conversation with a specific user
+  getOrCreateConversation: async (userId: number) => {
+    const response = await api.post('/chat/conversations/get_or_create/', {
+      user_id: userId,
+    });
+    return response.data;
+  },
+
+  // Get messages for a conversation
+  getMessages: async (conversationId: string) => {
+    const response = await api.get(`/chat/messages/?conversation_id=${conversationId}`);
+    return response.data;
+  },
+
+  // Send a message
+  sendMessage: async (
+    conversationId: string,
+    content: string,
+    messageType: string = 'text'
+  ) => {
+    const response = await api.post('/chat/messages/', {
+      conversation: conversationId,
+      content,
+      message_type: messageType,
+    });
+    return response.data;
+  },
+
+  // Mark messages as read
+  markMessagesRead: async (messageIds: number[]) => {
+    const response = await api.post('/chat/messages/mark_read/', {
+      message_ids: messageIds,
+    });
+    return response.data;
+  },
+
+  // Get AI response
+  getAIResponse: async (message: string) => {
+    const response = await api.post('/chat/ai-responses/generate_response/', {
+      message,
+    });
+    return response.data;
+  },
+
+  // Get privacy settings for a specific user
+  getPrivacySettings: async (targetUserId: number, ownerId: number) => {
+    const response = await api.get(
+      `/chat/privacy-settings/for_user/?target_user_id=${targetUserId}&owner_id=${ownerId}`
+    );
+    return response.data;
+  },
+
+  // Update privacy settings for a specific user
+  updatePrivacySettings: async (
+    targetUserId: number,
+    ownerId: number,
+    settings: {
+      can_view_status?: boolean;
+      can_view_profile?: boolean;
+      can_call?: boolean;
+      can_video_call?: boolean;
+      can_send_donate_request?: boolean;
+      can_tag?: boolean;
+      mute_notifications?: boolean;
+      blocked_until?: string | null;
+    }
+  ) => {
+    const response = await api.post('/chat/privacy-settings/update_for_user/', {
+      target_user_id: targetUserId,
+      owner_id: ownerId,
+      ...settings,
+    });
     return response.data;
   },
 };

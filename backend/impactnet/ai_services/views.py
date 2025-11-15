@@ -5,6 +5,13 @@ from rest_framework.permissions import IsAuthenticated
 from .face_verification_service import face_verification_service
 from .models import FaceVerification
 from django.utils import timezone
+from django.conf import settings
+
+try:
+    import anthropic
+    ANTHROPIC_AVAILABLE = True
+except ImportError:
+    ANTHROPIC_AVAILABLE = False
 
 
 class StartFaceVerificationView(APIView):
@@ -88,3 +95,72 @@ class CheckLivenessActionView(APIView):
         result = face_verification_service.detect_liveness(image, action)
 
         return Response(result)
+
+
+class AIRewriteTextView(APIView):
+    """Rewrite text using AI to make it better"""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        text = request.data.get('text', '')
+        context = request.data.get('context', 'comment')  # comment, post, message
+
+        if not text or not text.strip():
+            return Response(
+                {'error': 'Text is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            # Check if anthropic is available
+            if not ANTHROPIC_AVAILABLE:
+                return Response({
+                    'original': text,
+                    'rewritten': text,
+                    'message': 'AI service not available'
+                })
+
+            # Initialize Anthropic client
+            api_key = getattr(settings, 'ANTHROPIC_API_KEY', None)
+            if not api_key:
+                # Return original text if no API key
+                return Response({
+                    'original': text,
+                    'rewritten': text,
+                    'message': 'AI service not configured'
+                })
+
+            client = anthropic.Anthropic(api_key=api_key)
+
+            # Create prompt based on context
+            prompts = {
+                'comment': 'Rewrite this comment to be more clear, concise, and professional while maintaining the original meaning. Keep it friendly and authentic:',
+                'post': 'Rewrite this post to be more engaging and impactful while maintaining authenticity:',
+                'message': 'Rewrite this message to be more clear and friendly:'
+            }
+
+            prompt = prompts.get(context, prompts['comment'])
+
+            # Call Claude API
+            message = client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=1024,
+                messages=[{
+                    "role": "user",
+                    "content": f"{prompt}\n\n{text}"
+                }]
+            )
+
+            rewritten_text = message.content[0].text.strip()
+
+            return Response({
+                'success': True,
+                'original': text,
+                'rewritten': rewritten_text
+            })
+
+        except Exception as e:
+            return Response(
+                {'error': f'AI service error: {str(e)}', 'original': text, 'rewritten': text},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

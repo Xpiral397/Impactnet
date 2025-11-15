@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'posts',
     'payments',
     'ai_services',
+    'chat',
+    'marketplace',
 ]
 
 MIDDLEWARE = [

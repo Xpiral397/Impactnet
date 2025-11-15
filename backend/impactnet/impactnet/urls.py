@@ -10,4 +10,5 @@ urlpatterns = [
     path('api/', include('posts.urls')),
     path('api/ai/', include('ai_services.urls')),
     path('api/payments/', include('payments.urls')),
+    path('api/chat/', include('chat.urls')),
 ]

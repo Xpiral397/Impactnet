@@ -23,48 +23,57 @@ interface Post {
   likes_count: number;
   comments_count: number;
   created_at: string;
+  post_type?: string;
 }
 
 interface FeedScreenProps {
   navigation: any;
 }
 
+type FeedFilter = 'feed' | 'donate' | 'request';
+type SocialFilter = 'all' | 'following' | 'trending';
+
 export default function FeedScreen({ navigation }: FeedScreenProps) {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [displayedPosts, setDisplayedPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<FeedFilter>('feed');
+  const [activeSocialFilter, setActiveSocialFilter] = useState<SocialFilter>('all');
 
   useEffect(() => {
-    loadFeed();
+    if (allPosts.length === 0) {
+      loadFeed();
+    }
   }, []);
+
+  useEffect(() => {
+    filterPosts();
+  }, [activeFilter, activeSocialFilter, allPosts]);
+
+  const filterPosts = () => {
+    let filtered = allPosts;
+
+    // Filter by post type if not 'feed'
+    if (activeFilter !== 'feed') {
+      filtered = filtered.filter(p => p.post_type === activeFilter);
+    }
+
+    // Filter by social (following/trending) - for now just show all
+    // TODO: Implement following/trending logic when backend ready
+
+    setDisplayedPosts(filtered);
+  };
 
   const loadFeed = async () => {
     setLoading(true);
     try {
-      const data = await postsAPI.getFeed();
-      setPosts(data.results || data);
+      const data = await postsAPI.getFeed(1);
+      const posts = data.results || data;
+      setAllPosts(posts);
     } catch (error) {
-      // Show mock data if API fails
-      setPosts([
-        {
-          id: 1,
-          author: { username: 'kimberly857932' },
-          content: 'Learning new skills every day. This opportunity has changed my life!',
-          images: [],
-          likes_count: 0,
-          comments_count: 0,
-          created_at: '2025-11-06',
-        },
-        {
-          id: 2,
-          author: { username: 'laura075387' },
-          content: 'The skills training I received has opened so many doors. Grateful for this platform!',
-          images: [],
-          likes_count: 0,
-          comments_count: 0,
-          created_at: '2025-11-06',
-        },
-      ]);
+      console.error('Feed error:', error);
+      setAllPosts([]);
     } finally {
       setLoading(false);
     }
@@ -106,9 +115,12 @@ export default function FeedScreen({ navigation }: FeedScreenProps) {
       postId={item.id}
       onCommentPress={() =>
         navigation.navigate('CommentThread', {
-          postId: item.id,
-          postContent: item.content,
-          postAuthor: item.author.username,
+          post: item,
+        })
+      }
+      onProfilePress={() =>
+        navigation.navigate('UserProfile', {
+          username: item.author.username,
         })
       }
     />
@@ -127,10 +139,20 @@ export default function FeedScreen({ navigation }: FeedScreenProps) {
       <HomeHeader
         onNotificationsPress={() => Alert.alert('Notifications', 'Coming soon!')}
         onSearchPress={() => Alert.alert('Search', 'Coming soon!')}
+        onMessagesPress={() => {
+          const parent = navigation.getParent();
+          if (parent) {
+            parent.navigate('Messages');
+          }
+        }}
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+        activeSocialFilter={activeSocialFilter}
+        onSocialFilterChange={setActiveSocialFilter}
       />
-      
+
       <FlatList
-        data={posts}
+        data={displayedPosts}
         renderItem={renderPost}
         keyExtractor={(item) => item.id.toString()}
         refreshControl={

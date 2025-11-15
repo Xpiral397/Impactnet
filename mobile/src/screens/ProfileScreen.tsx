@@ -122,6 +122,19 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps) {
       {/* Actions */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Actions</Text>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => {
+            // Navigate to Messages tab
+            const parent = navigation.getParent();
+            if (parent) {
+              parent.navigate('Messages');
+            }
+          }}
+        >
+          <Text style={styles.actionIcon}>💬</Text>
+          <Text style={styles.actionText}>Messages</Text>
+        </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
           <Text style={styles.actionIcon}>⚙️</Text>
           <Text style={styles.actionText}>Settings</Text>

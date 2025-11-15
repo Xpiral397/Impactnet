@@ -14,6 +14,7 @@ interface PostCardProps {
   images?: string[];
   postId?: number;
   onCommentPress?: () => void;
+  onProfilePress?: () => void;
 }
 
 export default function PostCard({
@@ -27,6 +28,7 @@ export default function PostCard({
   images = [],
   postId,
   onCommentPress,
+  onProfilePress,
 }: PostCardProps) {
   const [isLiked, setIsLiked] = React.useState(false);
 
@@ -34,7 +36,11 @@ export default function PostCard({
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={onProfilePress}
+          activeOpacity={0.7}
+        >
           {/* Avatar */}
           <View style={styles.avatar}>
             {avatar ? (
@@ -58,7 +64,7 @@ export default function PostCard({
             </View>
             <Text style={styles.date}>{date}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* More options */}
         <TouchableOpacity style={styles.moreButton}>

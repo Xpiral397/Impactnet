@@ -14,13 +14,43 @@ import ForgotPasswordScreen from '../screens/ForgotPasswordScreen';
 import FeedScreen from '../screens/FeedScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import DonateScreen from '../screens/DonateScreen';
-import ActivityScreen from '../screens/ActivityScreen';
+import MarketplaceScreen from '../screens/MarketplaceScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import FaceVerificationScreen from '../screens/FaceVerificationScreen';
 import CommentThreadScreen from '../screens/CommentThreadScreen';
+import UserProfileScreen from '../screens/UserProfileScreen';
+import ChatListScreen from '../screens/ChatListScreen';
+import ChatScreen from '../screens/ChatScreen';
+import PrivacySettingsScreen from '../screens/PrivacySettingsScreen';
+import ChatPrivacySettingsScreen from '../screens/ChatPrivacySettingsScreen';
+import ChatInfoScreen from '../screens/ChatInfoScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+const HomeStack = createStackNavigator();
+const MessagesStack = createStackNavigator();
+
+function HomeStackScreen() {
+  return (
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+      <HomeStack.Screen name="Feed" component={FeedScreen} />
+      <HomeStack.Screen name="CommentThread" component={CommentThreadScreen} />
+      <HomeStack.Screen name="UserProfile" component={UserProfileScreen} />
+    </HomeStack.Navigator>
+  );
+}
+
+function MessagesStackScreen() {
+  return (
+    <MessagesStack.Navigator screenOptions={{ headerShown: false }}>
+      <MessagesStack.Screen name="ChatList" component={ChatListScreen} />
+      <MessagesStack.Screen name="Chat" component={ChatScreen} />
+      <MessagesStack.Screen name="ChatInfo" component={ChatInfoScreen} />
+      <MessagesStack.Screen name="PrivacySettings" component={PrivacySettingsScreen} />
+      <MessagesStack.Screen name="ChatPrivacySettings" component={ChatPrivacySettingsScreen} />
+    </MessagesStack.Navigator>
+  );
+}
 
 function MainTabs() {
   return (
@@ -51,7 +81,7 @@ function MainTabs() {
     >
       <Tab.Screen
         name="Home"
-        component={FeedScreen}
+        component={HomeStackScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Icon
@@ -63,12 +93,12 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Discover"
-        component={DiscoverScreen}
+        name="Messages"
+        component={MessagesStackScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <Icon
-              name={focused ? 'compass' : 'compass-outline'}
+              name={focused ? 'chatbubbles' : 'chatbubbles-outline'}
               size={24}
               color={color}
             />
@@ -94,12 +124,12 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
-        name="Activity"
-        component={ActivityScreen}
+        name="Marketplace"
+        component={MarketplaceScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <MaterialIcon
-              name={focused ? 'chart-line' : 'chart-line'}
+              name={focused ? 'store' : 'store-outline'}
               size={24}
               color={color}
             />
@@ -174,13 +204,6 @@ export default function AppNavigator() {
               backgroundColor: '#3B82F6',
             },
             headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen
-          name="CommentThread"
-          component={CommentThreadScreen}
-          options={{
-            headerShown: false,
           }}
         />
       </Stack.Navigator>
